@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: geo-simulator
+  shell:
+    interactive:
+      enabled: true
+
+app:
+  websocket:
+    destination: /app/location/update
+    ws_url: ws://localhost:8083/ws
+  geo:
+    simulation:
+      emit-interval: 1s
+
+logging:
+  level:
+    com:
+      ifortex:
+        internship:
+          geosimulator: DEBUG
