@@ -22,6 +22,7 @@ public class LocationGenerator {
     private Duration emitInterval;
 
     public Flux<GeoLocationDto> generateLocationStream(
+        UUID emergencyId,
         UUID paramedicId,
         BigDecimal startLat, BigDecimal startLng,
         BigDecimal endLat, BigDecimal endLng,
@@ -44,6 +45,7 @@ public class LocationGenerator {
                 BigDecimal currentLng = startLng.add(lngStep.multiply(stepIndex));
 
                 return new GeoLocationDto(
+                    emergencyId,
                     paramedicId,
                     currentLat,
                     currentLng,

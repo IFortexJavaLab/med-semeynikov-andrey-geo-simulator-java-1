@@ -21,29 +21,26 @@ public class Commands {
 
     @ShellMethod(key = "simulate-route", value = "Start paramedic geolocation simulation")
     public String simulateRoute(
-        @ShellOption(value = {"-i", "--id"}, help = "Paramedic ID") UUID paramedicId,
+        @ShellOption(value = {"-e", "--emergency-id"}, help = "Emergency ID") UUID emergencyId,
+        @ShellOption(value = {"-p", "--paramedic"}, help = "Paramedic ID") UUID paramedicId,
         @ShellOption(value = {"--from-lat"}, help = "Start latitude") BigDecimal startLat,
         @ShellOption(value = {"--from-lng"}, help = "Start longitude") BigDecimal startLng,
         @ShellOption(value = {"--to-lat"}, help = "End latitude") BigDecimal endLat,
         @ShellOption(value = {"--to-lng"}, help = "End longitude") BigDecimal endLng,
         @ShellOption(value = {"-d", "--duration"}, help = "Duration in seconds") int durationInSeconds
     ) {
-        if (durationInSeconds <= 0) {
-            return "Duration must be > 0 seconds";
-        }
-        if (startLat.compareTo(BigDecimal.ZERO) == 0 || startLng.compareTo(BigDecimal.ZERO) == 0) {
+        if (durationInSeconds <= 0) return "Duration must be > 0 seconds";
+        if (startLat.compareTo(BigDecimal.ZERO) == 0 || startLng.compareTo(BigDecimal.ZERO) == 0)
             return "Start coordinates must not be zero";
-        }
-        if (endLat.compareTo(BigDecimal.ZERO) == 0 || endLng.compareTo(BigDecimal.ZERO) == 0) {
+        if (endLat.compareTo(BigDecimal.ZERO) == 0 || endLng.compareTo(BigDecimal.ZERO) == 0)
             return "End coordinates must not be zero";
-        }
-        if (startLat.equals(endLat) && startLng.equals(endLng)) {
+        if (startLat.equals(endLat) && startLng.equals(endLng))
             return "Start and end points must be different";
-        }
 
-        geoLocationSender.startSimulation(paramedicId, startLat, startLng, endLat, endLng, durationInSeconds);
-        return "Simulation started for paramedic: " + paramedicId;
+        geoLocationSender.startSimulation(emergencyId, paramedicId, startLat, startLng, endLat, endLng, durationInSeconds);
+        return "Simulation started for paramedic: " + paramedicId + " (Emergency: " + emergencyId + ")";
     }
+
 
     @ShellMethod(value = "Stop paramedic simulation", key = "stop-route")
     public String stopSimulation(@ShellOption(value = {"-i", "--id"}) UUID paramedicId) {
