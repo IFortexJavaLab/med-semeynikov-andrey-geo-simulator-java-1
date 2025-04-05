@@ -33,7 +33,8 @@ public class GeoLocationSender {
 
     private final Map<UUID, Disposable> activeSimulations = new ConcurrentHashMap<>();
 
-    public void startSimulation(UUID paramedicId,
+    public void startSimulation(UUID emergencyId,
+                                UUID paramedicId,
                                 BigDecimal startLat, BigDecimal startLng,
                                 BigDecimal endLat, BigDecimal endLng,
                                 int durationInSeconds) {
@@ -45,17 +46,25 @@ public class GeoLocationSender {
 
         StompSession session = webSocketClientService.getSession();
         Flux<GeoLocationDto> locationStream = locationGenerator.generateLocationStream(
-            paramedicId, startLat, startLng, endLat, endLng, durationInSeconds
+            emergencyId, paramedicId, startLat, startLng, endLat, endLng, durationInSeconds
         );
 
-        Disposable disposable = locationStream.subscribe(
-            createLocationSender(session, paramedicId),
-            error -> log.error("Simulation error for {}: {}", paramedicId, error.getMessage()),
-            () -> {
-                log.info("Simulation completed for {}", paramedicId);
-                activeSimulations.remove(paramedicId);
+        Disposable disposable = locationStream.subscribe(location -> {
+            try {
+                session.send(destination, new GeoLocationDto(
+                    emergencyId,
+                    location.paramedicId(),
+                    location.latitude(),
+                    location.longitude(),
+                    location.timestamp()
+                ));
+            } catch (Exception e) {
+                log.error("Failed to send location for paramedic {}: {}", paramedicId, e.getMessage());
             }
-        );
+        }, error -> log.error("Simulation error for paramedic {}: {}", paramedicId, error.getMessage()), () -> {
+            log.info("Simulation completed for paramedic {}", paramedicId);
+            activeSimulations.remove(paramedicId);
+        });
 
         activeSimulations.put(paramedicId, disposable);
     }
